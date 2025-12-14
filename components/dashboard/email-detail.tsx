@@ -69,9 +69,9 @@ export const EmailDetail = memo(function EmailDetail({
       const bccArray = bcc.trim() ? bcc.split(",").map((e) => e.trim()) : [];
 
       const payload = {
-        to: [email.senderEmail],
-        from: replyEmail,
-        replyTo: [email.senderEmail],
+        to: [replyEmail],
+        from: "onboarding@resend.dev",
+        replyTo: [replyEmail],
         subject: `Re: ${email.subject}`,
         html: emailContent,
         cc: ccArray.length > 0 ? ccArray : undefined,
