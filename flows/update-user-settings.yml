@@ -1,0 +1,66 @@
+id: update-user-settings
+namespace: tria
+description: Update user settings in KV Store via webhook
+
+tasks:
+  - id: update_full_name
+    type: io.kestra.plugin.core.kv.Set
+    key: "user_tria_FULL_NAME"
+    value: "{{ trigger.body.full_name }}"
+    kvType: STRING
+    overwrite: true
+  
+  - id: update_role
+    type: io.kestra.plugin.core.kv.Set
+    key: "user_tria_ROLE"
+    value: "{{ trigger.body.role }}"
+    kvType: STRING
+    overwrite: true
+  
+  - id: update_email_interests
+    type: io.kestra.plugin.core.kv.Set
+    key: "user_tria_EMAIL_INTERESTS"
+    value: "{{ trigger.body.email_interests }}"
+    kvType: STRING
+    overwrite: true
+  
+  - id: update_communication_styles
+    type: io.kestra.plugin.core.kv.Set
+    key: "user_tria_COMMUNICATION_STYLES"
+    value: "{{ trigger.body.communication_styles }}"
+    kvType: STRING
+    overwrite: true
+  
+  - id: update_key_constraints
+    type: io.kestra.plugin.core.kv.Set
+    key: "user_tria_KEY_CONSTRAINTS"
+    value: "{{ trigger.body.key_constraints }}"
+    kvType: STRING
+    overwrite: true
+
+outputs:
+  - id: success
+    type: BOOLEAN
+    value: true
+  
+  - id: updated_fields
+    type: JSON
+    value: |
+      {
+        "full_name": "{{ trigger.body.full_name }}",
+        "role": "{{ trigger.body.role }}",
+        "email_interests": "{{ trigger.body.email_interests }}",
+        "communication_styles": "{{ trigger.body.communication_styles }}",
+        "key_constraints": "{{ trigger.body.key_constraints }}"
+      }
+  
+  - id: timestamp
+    type: STRING
+    value: "{{ now() }}"
+
+triggers:
+  - id: webhook_trigger
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: "{{ secret('UPDATE_SETTINGS_WEBHOOK_KEY') }}"
+    wait: true
+    returnOutputs: true

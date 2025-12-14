@@ -1,0 +1,63 @@
+id: get-user-settings
+namespace: tria
+description: Fetch all user settings from KV Store via webhook
+
+tasks:
+  - id: fetch_all_settings
+    type: io.kestra.plugin.core.flow.Parallel
+    tasks:
+      - id: get_full_name
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_FULL_NAME"
+        errorOnMissing: false
+
+      - id: get_role
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_ROLE"
+        errorOnMissing: false
+
+      - id: get_company_description
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_COMPANY_DESCRIPTION"
+        errorOnMissing: false
+      
+      - id: get_email_interests
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_EMAIL_INTERESTS"
+        errorOnMissing: false
+      
+      - id: get_communication_styles
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_COMMUNICATION_STYLES"
+        errorOnMissing: false
+      
+      - id: get_key_constraints
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_KEY_CONSTRAINTS"
+        errorOnMissing: false
+
+outputs:
+  - id: settings
+    type: JSON
+    value: |
+      {
+        "full_name": "{{ outputs.get_full_name.value | default(null) }}",
+        "role": "{{ outputs.get_role.value | default(null) }}",
+        "company_description": "{{ outputs.get_company_description.value | default(null) }}",
+        "email_interests": "{{ outputs.get_email_interests.value | default(null) }}",
+        "communication_styles": "{{ outputs.get_communication_styles.value | default(null) }}",
+        "key_constraints": "{{ outputs.get_key_constraints.value | default(null) }}"
+      }
+
+triggers:
+  - id: webhook_trigger
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: "{{ secret('GET_SETTINGS_WEBHOOK_KEY') }}"
+    wait: true
+    returnOutputs: true

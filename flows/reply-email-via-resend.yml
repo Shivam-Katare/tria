@@ -1,0 +1,71 @@
+id: reply-email-via-resend
+namespace: tria
+description: Reply to emails using Resend with reply-to support
+
+inputs:
+  - id: to
+    type: ARRAY
+    itemType: STRING
+    
+  - id: from
+    type: STRING
+    defaults: "onboarding@resend.dev"
+    
+  - id: replyTo
+    type: ARRAY
+    itemType: STRING
+    required: false
+    
+  - id: subject
+    type: STRING
+    defaults: "Reply from Tria"
+    
+  - id: html
+    type: STRING
+    required: false
+    
+  - id: cc
+    type: ARRAY
+    itemType: STRING
+    required: false
+    
+  - id: bcc
+    type: ARRAY
+    itemType: STRING
+    required: false
+
+tasks:
+  - id: send_reply
+    type: io.kestra.plugin.resend.email.Send
+    apiKey: "{{ secret('RESEND_API_KEY') }}"
+    from: "{{ trigger.body.from | default('onboarding@resend.dev') }}"
+    to: "{{ trigger.body.to }}"
+    replyTo: "{{ trigger.body.replyTo | default([]) }}"
+    subject: "{{ trigger.body.subject | default('Reply from Tria') }}"
+    html: "{{ trigger.body.html }}"
+    cc: "{{ trigger.body.cc | default([]) }}"
+    bcc: "{{ trigger.body.bcc | default([]) }}"
+
+outputs:
+  - id: success
+    type: BOOLEAN
+    value: true
+  
+  - id: emailId
+    type: STRING
+    value: "{{ outputs.send_reply.id }}"
+  
+  - id: sentTo
+    type: JSON
+    value: "{{ trigger.body.to }}"
+  
+  - id: timestamp
+    type: STRING
+    value: "{{ now() }}"
+
+triggers:
+  - id: webhook_trigger
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: "{{ secret('REPLY_EMAIL_WEBHOOK_KEY') }}"
+    wait: true
+    returnOutputs: true

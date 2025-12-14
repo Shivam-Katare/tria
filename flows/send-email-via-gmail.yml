@@ -1,0 +1,63 @@
+id: send-email-via-gmail
+namespace: tria
+description: Send email via Gmail with dynamic inputs from webhook
+
+inputs:
+  - id: to
+    type: ARRAY
+    itemType: STRING
+    
+  - id: subject
+    type: STRING
+    defaults: "Email from Tria"
+    
+  - id: htmlBody
+    type: STRING
+    required: false
+    
+  - id: textBody
+    type: STRING
+    required: false
+    
+  - id: cc
+    type: ARRAY
+    itemType: STRING
+    required: false
+    
+  - id: bcc
+    type: ARRAY
+    itemType: STRING
+    required: false
+
+tasks:
+  - id: send_email
+    type: io.kestra.plugin.googleworkspace.mail.Send
+    clientId: "{{ secret('GMAIL_CLIENT_ID') }}"
+    clientSecret: "{{ secret('GMAIL_CLIENT_SECRET') }}"
+    refreshToken: "{{ secret('GMAIL_REFRESH_TOKEN') }}"
+    to: "{{ trigger.body.to }}"
+    subject: "{{ trigger.body.subject | default('Email from Tria') }}"
+    htmlBody: "{{ trigger.body.htmlBody }}"
+    textBody: "{{ trigger.body.textBody }}"
+    cc: "{{ trigger.body.cc | default([]) }}"
+    bcc: "{{ trigger.body.bcc | default([]) }}"
+
+outputs:
+  - id: threadId
+    type: STRING
+    value: "{{ outputs.send_email.threadId }}"
+  
+  - id: messageId
+    type: STRING
+    value: "{{ outputs.send_email.messageId }}"
+  
+  - id: success
+    type: BOOLEAN
+    value: true
+
+triggers:
+  - id: webhook_trigger
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: "{{ secret('SEND_EMAIL_WEBHOOK_KEY') }}"
+    wait: true
+    returnOutputs: true

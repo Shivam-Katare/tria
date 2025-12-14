@@ -1,0 +1,204 @@
+id: hi-tria
+namespace: tria
+description: "AI Email Triage with KV-based personalization, badges, and human-like summary"
+
+pluginDefaults:
+  - type: io.kestra.plugin.ai.agent.AIAgent
+    values:
+      provider:
+        type: io.kestra.plugin.ai.provider.GoogleGemini
+        modelName: gemini-2.5-flash-lite
+        apiKey: "{{ secret('GEMINI_API_KEY') }}"
+      configuration:
+        logRequests: true
+        logResponses: true
+
+tasks:
+  - id: load_user_settings
+    type: io.kestra.plugin.core.flow.Parallel
+    tasks:
+      - id: get_full_name
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_FULL_NAME"
+      
+      - id: get_role
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_ROLE"
+      
+      - id: get_email_interests
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_EMAIL_INTERESTS"
+      
+      - id: get_communication_styles
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_COMMUNICATION_STYLES"
+      
+      - id: get_key_constraints
+        type: io.kestra.plugin.core.kv.Get
+        namespace: tria
+        key: "user_tria_KEY_CONSTRAINTS"
+
+  - id: list_emails
+    type: io.kestra.plugin.googleworkspace.mail.List
+    clientId: "{{ secret('GMAIL_CLIENT_ID') }}"
+    clientSecret: "{{ secret('GMAIL_CLIENT_SECRET') }}"
+    refreshToken: "{{ secret('GMAIL_REFRESH_TOKEN') }}"
+    maxResults: 5
+    labelIds:
+      - INBOX
+      - UNREAD
+
+  - id: process_emails
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ outputs.list_emails.messages }}"
+    tasks:
+      - id: fetch_email_details
+        type: io.kestra.plugin.googleworkspace.mail.Get
+        clientId: "{{ secret('GMAIL_CLIENT_ID') }}"
+        clientSecret: "{{ secret('GMAIL_CLIENT_SECRET') }}"
+        refreshToken: "{{ secret('GMAIL_REFRESH_TOKEN') }}"
+        messageId: "{{ json(taskrun.value).id }}"
+        format: full
+
+      - id: ai_analyze_email
+        type: io.kestra.plugin.ai.agent.AIAgent
+        systemMessage: |
+          You are an AI email analyst for {{ outputs.get_full_name.value }}.
+          
+          USER PROFILE:
+          - Name: {{ outputs.get_full_name.value }}
+          - Role: {{ outputs.get_role.value }}
+          - Interests: {{ outputs.get_email_interests.value }}
+          - Communication Style: {{ outputs.get_communication_styles.value }}
+          - Rules: {{ outputs.get_key_constraints.value }}
+          
+          BADGE CATEGORIES (choose ONE):
+          - ACTION_REQUIRED: Needs reply, decision, task completion
+          - URGENT: Time-sensitive, deadline, marked urgent
+          - TRACKING: Package delivery, order tracking
+          - MEETING: Calendar invites, scheduling
+          - NEWSLETTER: Subscribed content, digests
+          - PROMOTIONAL: Marketing, ads, sales
+          - SOCIAL: Social media notifications
+          - FYI: Informational, no action needed
+          
+          Return valid JSON only.
+        
+        prompt: |
+          Analyze this email:
+          
+          From: {{ outputs.fetch_email_details | json | jq('.[].message.from') | first }}
+          Subject: {{ outputs.fetch_email_details | json | jq('.[].message.subject') | first }}
+          Body: {{ outputs.fetch_email_details | json | jq('.[].message.snippet') | first }}
+          
+          1. BADGE: Assign ONE category (exact enum value)
+          2. SCORE (1-100): Relevance to user interests
+          3. REASON (max 15 words): Why this badge and score?
+          4. SUMMARY (2-3 sentences): What is this about?
+          5. NEEDS_REPLY (boolean): Should user reply?
+          6. DRAFT (string): Reply draft if needs_reply=true
+        
+        configuration:
+          responseFormat:
+            type: JSON
+            jsonSchema:
+              type: object
+              required: ["badge", "score", "reason", "summary", "needs_reply", "draft"]
+              properties:
+                badge:
+                  type: string
+                  enum: ["ACTION_REQUIRED", "URGENT", "TRACKING", "MEETING", "NEWSLETTER", "PROMOTIONAL", "SOCIAL", "FYI"]
+                score:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                reason:
+                  type: string
+                summary:
+                  type: string
+                needs_reply:
+                  type: boolean
+                draft:
+                  type: string
+
+      - id: save_email_data
+        type: io.kestra.plugin.core.output.OutputValues
+        values:
+          id: "{{ outputs.fetch_email_details | json | jq('.[].message.id') | first }}"
+          threadId: "{{ outputs.fetch_email_details | json | jq('.[].message.threadId') | first }}"
+          subject: "{{ outputs.fetch_email_details | json | jq('.[].message.subject') | first }}"
+          from: "{{ outputs.fetch_email_details | json | jq('.[].message.from') | first }}"
+          snippet: "{{ outputs.fetch_email_details | json | jq('.[].message.snippet') | first }}"
+          textHtml: "{{ outputs.fetch_email_details | json | jq('.[].message.textHtml') | first }}"
+          date: "{{ outputs.fetch_email_details | json | jq('.[].message.internalDate') | first }}"
+          badge: "{{ outputs.ai_analyze_email | json | jq('.[].jsonOutput.badge') | first }}"
+          score: "{{ outputs.ai_analyze_email | json | jq('.[].jsonOutput.score') | first }}"
+          reason: "{{ outputs.ai_analyze_email | json | jq('.[].jsonOutput.reason') | first }}"
+          summary: "{{ outputs.ai_analyze_email | json | jq('.[].jsonOutput.summary') | first }}"
+          needs_reply: "{{ outputs.ai_analyze_email | json | jq('.[].jsonOutput.needs_reply') | first }}"
+          draft: "{{ outputs.ai_analyze_email | json | jq('.[].jsonOutput.draft') | first }}"
+
+  - id: overall_summary
+    type: io.kestra.plugin.ai.agent.AIAgent
+    systemMessage: |
+      You are writing a personalized inbox summary for {{ outputs.get_full_name.value }}.
+      Write like a calm, thoughtful assistant—warm, reassuring, never robotic.
+      Use flowing sentences, natural transitions, no bullet points.
+    
+    prompt: |
+      Here are today's emails:
+      {{ outputs.save_email_data | jq('[.[] | .values | {subject, badge, score}]') }}
+      
+      Write a 3-4 sentence summary that flows naturally.
+      Count by category but don't mention counts in narrative:
+      - priority_count: score ≥ 80
+      - garden_count: score 50-79
+      - breeze_count: score < 50
+    
+    configuration:
+      responseFormat:
+        type: JSON
+        jsonSchema:
+          type: object
+          required: ["summary", "priority_count", "garden_count", "breeze_count"]
+          properties:
+            summary:
+              type: string
+            priority_count:
+              type: integer
+            garden_count:
+              type: integer
+            breeze_count:
+              type: integer
+
+outputs:
+  - id: emails
+    type: JSON
+    value: "{{ outputs.save_email_data | jq('[.[] | .values]') }}"
+  
+  - id: summary
+    type: JSON
+    value: "{{ outputs.overall_summary | json | jq('.jsonOutput') | first }}"
+  
+  - id: total_count
+    type: INT
+    value: "{{ outputs.list_emails.messages | length }}"
+  
+  - id: user_id
+    type: STRING
+    value: "user_tria"
+  
+  - id: execution_time
+    type: STRING
+    value: "{{ now() }}"
+
+triggers:
+  - id: webhook
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: "{{ secret('TRIA_EMAIL_TRIAGE_WEBHOOK_KEY') }}"
+    wait: true
+    returnOutputs: true

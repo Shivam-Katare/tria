@@ -1,0 +1,28 @@
+id: slack_notification
+namespace: tria
+
+tasks:
+  - id: send_to_slack
+    type: io.kestra.plugin.notifications.slack.SlackIncomingWebhook
+    url: "{{ secret('SLACK_WEBHOOK_URL') }}"
+    messageText: "{{ trigger.body.text }}"
+
+outputs:
+  - id: success
+    type: BOOLEAN
+    value: true
+  
+  - id: message
+    type: STRING
+    value: "{{ trigger.body.text }}"
+  
+  - id: timestamp
+    type: STRING
+    value: "{{ now() }}"
+
+triggers:
+  - id: webhook_trigger
+    type: io.kestra.plugin.core.trigger.Webhook
+    key: "{{ secret('SLACK_WEBHOOK_KEY') }}"
+    wait: true
+    returnOutputs: true
