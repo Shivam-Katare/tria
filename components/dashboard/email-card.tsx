@@ -48,7 +48,7 @@ export const EmailCard = memo(function EmailCard({
           )}
         </div>
 
-        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
           {email.summary || email.snippet}
         </p>
 

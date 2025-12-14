@@ -89,7 +89,7 @@ export function ComposeEmailDialog({
         >
           {/* Header */}
           <div className="px-6 py-4 border-b flex items-center justify-between">
-            <h2 className="text-lg font-semibold">New Message</h2>
+            <h2 className="text-lg font-semibold">Send Mail</h2>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
@@ -172,7 +172,7 @@ export function ComposeEmailDialog({
           </div>
 
           {/* Rich Text Editor */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden bg-card rounded-[12px] mx-4">
             <RichTextEditor
               value={body}
               onChange={setBody}
@@ -182,7 +182,7 @@ export function ComposeEmailDialog({
 
           {/* Footer */}
           <div className="px-6 py-4 border-t flex items-center justify-between bg-muted/20">
-            <Button onClick={handleSend} disabled={isSending} className="gap-2">
+            <Button onClick={handleSend} disabled={isSending} className="gap-2 bg-linear-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white border-0 shadow-lg">
               <Send className="h-4 w-4" />
               {isSending ? "Sending..." : "Send"}
             </Button>

@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DailyGreeting } from "@/components/dashboard/daily-greeting";
 import { AISummary } from "@/components/dashboard/ai-summary";
-import { TimeDisplay } from "@/components/dashboard/time-display";
 import { EmailSection } from "@/components/dashboard/email-section";
 import { EmailDetail } from "@/components/dashboard/email-detail";
 import { useEmailStore } from "@/store/email-store";
@@ -44,6 +43,7 @@ export default function DashboardPage() {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader />
@@ -59,22 +59,12 @@ export default function DashboardPage() {
             {/* Greeting */}
             <DailyGreeting totalEmails={emails.length} />
 
-            {/* Balanced Grid: Summary + Time + Compose */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Summary */}
-              <div className="lg:col-span-2">
-                <AISummary
-                  priorityCount={priorityEmails.length}
-                  gardenCount={gardenEmails.length}
-                  breezeCount={breezeEmails.length}
-                />
-              </div>
-
-              {/* Time Display */}
-              <div className="lg:col-span-1">
-                <TimeDisplay />
-              </div>
-            </div>
+            {/* Full Width Summary - No Grid */}
+            <AISummary
+              priorityCount={priorityEmails.length}
+              gardenCount={gardenEmails.length}
+              breezeCount={breezeEmails.length}
+            />
 
             {/* Email Sections */}
             <EmailSection

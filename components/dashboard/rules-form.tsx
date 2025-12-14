@@ -102,11 +102,11 @@ export function RulesForm() {
   }
 
   const inputClass =
-    "w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400";
+    "w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-background text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400";
 
   return (
     <div className="space-y-6">
-      <Card className="p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-sm">
+      <Card className="p-6 bg-card border-gray-200 dark:border-gray-800 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
           Basic Information
         </h3>
@@ -143,7 +143,7 @@ export function RulesForm() {
         onToggle={toggleStyle}
       />
 
-      <Card className="p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-sm">
+      <Card className="p-6 bg-card border-gray-200 dark:border-gray-800 shadow-sm">
         <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
           Key Constraints
         </h3>

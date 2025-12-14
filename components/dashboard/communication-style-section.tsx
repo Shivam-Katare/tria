@@ -13,7 +13,7 @@ export function CommunicationStyleSection({
   onToggle,
 }: CommunicationStyleSectionProps) {
   return (
-    <Card className="p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-sm">
+    <Card className="p-6 bg-card border-gray-200 dark:border-gray-800 shadow-sm">
       <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
         Communication Style (Select up to 3)
       </h3>

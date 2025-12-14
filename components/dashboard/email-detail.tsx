@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Archive, Sparkles, Mail, Send, MessageSquare } from "lucide-react";
+import { X, Archive, Sparkles, Mail, Send, ChevronDown } from "lucide-react";
+import { Slack } from "lucide-react";
 import type { Email } from "@/types/email";
 import { memo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -26,6 +27,7 @@ export const EmailDetail = memo(function EmailDetail({
   const [showBcc, setShowBcc] = useState(false);
   const [cc, setCc] = useState("");
   const [bcc, setBcc] = useState("");
+  const [isInsightsExpanded, setIsInsightsExpanded] = useState(true);
 
   // Pre-fill draft if needs_reply is true and draft is not empty
   useEffect(() => {
@@ -117,30 +119,6 @@ export const EmailDetail = memo(function EmailDetail({
                 )}
               </div>
             </div>
-
-            {email.summary && (
-              <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-lg">
-                <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium mb-1">Email Summary</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {email.summary}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {email.aiReason && (
-              <div className="flex items-start gap-2 p-3 bg-secondary/50 rounded-lg">
-                <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium mb-1">AI Analysis</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {email.aiReason}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-2 ml-4 shrink-0">
@@ -151,7 +129,7 @@ export const EmailDetail = memo(function EmailDetail({
               disabled={isSendingToSlack}
               className="gap-2 bg-linear-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white border-0"
             >
-              <MessageSquare className="h-4 w-4" />
+              <Slack className="h-4 w-4" />
               {isSendingToSlack ? "Sending..." : "Send to Slack"}
             </Button>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -159,12 +137,64 @@ export const EmailDetail = memo(function EmailDetail({
             </Button>
           </div>
         </div>
+
+        {/* AI Insights - Full Width & Collapsible */}
+        {(email.summary || email.aiReason) && (
+          <div className="px-4 mt-4">
+            <div className="p-4 bg-card rounded-xl border border-purple-100 dark:border-purple-900/30">
+              <button
+                onClick={() => setIsInsightsExpanded(!isInsightsExpanded)}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl hover:opacity-90 transition-opacity"
+              >
+                {/* Icon container */}
+                <div
+                  className="flex items-center justify-center w-7 h-7 rounded-lg bg-linear-to-br from-orange-500 via-pink-500 to-purple-600"
+                >
+                  <Sparkles className="h-4 w-4 text-white" />
+                </div>
+
+                {/* Gradient text */}
+                <span
+                  className="text-base font-semibold tracking-tight bg-linear-to-r from-orange-400 via-pink-500 to-purple-500 bg-clip-text text-transparent"
+                >
+                  AI Insight
+                </span>
+              </button>
+
+              {isInsightsExpanded && (
+                <div className="space-y-3">
+                  {email.summary && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground/70 mb-1">
+                        Summary
+                      </p>
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {email.summary}
+                      </p>
+                    </div>
+                  )}
+
+                  {email.aiReason && (
+                    <div className="pt-2 border-t border-purple-100/50 dark:border-purple-900/20">
+                      <p className="text-xs font-medium text-muted-foreground/70 mb-1">
+                        Why This Matters
+                      </p>
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {email.aiReason}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Two Column Layout: Email Content + Reply Area */}
       <div className="flex flex-col lg:flex-row gap-6 pb-6">
         {/* Left Side: Email Content (Scrollable) */}
-        <div className="flex-1 min-w-0 px-4 overflow-y-auto max-h-[calc(100vh-300px)]">
+        <div className="flex-1 min-w-0 px-4 overflow-y-auto max-h-[calc(100vh-300px)] bg-card rounded-[12px] p-4">
           <div
             className="email-content prose prose-sm max-w-none [word-break:break-word] wrap-anywhere"
             dangerouslySetInnerHTML={{ __html: email.htmlContent }}
@@ -173,7 +203,7 @@ export const EmailDetail = memo(function EmailDetail({
 
         {/* Right Side: Reply Area (Fixed Width) */}
         <div className="w-full lg:w-[480px] shrink-0">
-          <div className="bg-background rounded-lg border lg:sticky lg:top-4 max-h-[calc(100vh-120px)] overflow-y-auto">
+          <div className="bg-card rounded-lg border lg:sticky lg:top-4 max-h-[calc(100vh-120px)] overflow-y-auto">
             {/* Reply Header */}
             <div className="px-4 py-3 border-b bg-muted/30">
               <div className="flex items-center justify-between mb-2">
@@ -246,7 +276,7 @@ export const EmailDetail = memo(function EmailDetail({
                 onClick={handleSend}
                 disabled={isSendingEmail}
                 size="sm"
-                className="gap-2"
+                className="gap-2 bg-linear-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white border-0 shadow-lg"
               >
                 <Send className="h-4 w-4" />
                 {isSendingEmail ? "Sending..." : "Send"}
@@ -259,7 +289,7 @@ export const EmailDetail = memo(function EmailDetail({
                 className="gap-2"
               >
                 <Archive className="h-4 w-4" />
-                Archive & Close
+                Close
               </Button>
             </div>
           </div>

@@ -24,22 +24,25 @@ export function DashboardHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+      <header className="sticky top-0 z-50 bg-card backdrop-blur-sm border-b border-border">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold tracking-tight">
+          <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
+            <Link
+              href="/"
+              className="text-xl font-bold tracking-tight shrink-0"
+            >
               Tria
             </Link>
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "px-4 py-2 text-sm rounded-md transition-colors",
+                    "px-3 md:px-4 py-2 text-xs md:text-sm rounded-md whitespace-nowrap",
                     pathname === item.href
                       ? "bg-secondary text-foreground font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      : ""
                   )}
                 >
                   {item.label}
@@ -53,30 +56,30 @@ export function DashboardHeader() {
             <Button
               size="sm"
               onClick={() => setIsComposeOpen(true)}
-              className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
+              className="gap-2 bg-linear-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white border-0"
             >
               <Mail className="w-4 h-4" />
               <span className="hidden sm:inline">Compose</span>
             </Button>
 
-          {/* User Email */}
-          <span className="text-sm text-muted-foreground hidden md:block">
-            {session?.user?.email}
-          </span>
+            {/* User Email */}
+            <span className="text-sm text-muted-foreground hidden md:block">
+              {session?.user?.email}
+            </span>
 
-          {/* Logout Button */}
-          <button
-            onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
-            title="Sign out"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+            {/* Logout Button */}
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
 
-          <ThemeToggle />
+            <ThemeToggle />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
       {/* Compose Email Dialog */}
       <ComposeEmailDialog
