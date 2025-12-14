@@ -2,7 +2,7 @@
 
 import { EmailCard } from "./email-card";
 import { Star } from "lucide-react";
-import type { Email } from "@/lib/mock-data";
+import type { Email } from "@/types/email";
 import { memo } from "react";
 import { motion } from "framer-motion";
 

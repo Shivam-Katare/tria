@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -37,7 +37,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-    /* Custom semantic tokens */
+  /* Custom semantic tokens */
   --urgent: #ef4444;
   --important: #fbbf24;
   --success: #34d399;
@@ -77,15 +77,15 @@
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
 
-    /* Custom semantic tokens */
+  /* Custom semantic tokens */
   --urgent: #ef4444;
   --important: #fbbf24;
   --success: #34d399;
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
   --font-henny: var(--font-henny);
   --font-crimson: var(--font-crimson);
   --font-outfit: var(--font-outfit);
@@ -137,4 +137,93 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Email content styling - Gmail-like clean rendering */
+.email-content {
+  @apply text-foreground;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: inherit;
+}
+
+/* Remove default margins and let email HTML control layout */
+.email-content * {
+  max-width: 100%;
+}
+
+.email-content img {
+  @apply h-auto;
+  max-width: 100% !important;
+  height: auto !important;
+  display: inline-block;
+}
+
+.email-content a {
+  @apply text-blue-600 dark:text-blue-400;
+  text-decoration: none;
+}
+
+.email-content a:hover {
+  text-decoration: underline;
+}
+
+/* Tables - no forced borders, let email control styling */
+.email-content table {
+  border-collapse: collapse;
+  max-width: 100%;
+}
+
+.email-content td,
+.email-content th {
+  padding: 0;
+  border: none;
+}
+
+/* Remove forced styling on common elements */
+.email-content p,
+.email-content div,
+.email-content span {
+  margin: 0;
+  padding: 0;
+}
+
+/* Let email HTML control all styling for authenticity */
+.email-content blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+.email-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.email-content code {
+  font-family: monospace;
+}
+
+/* Remove forced heading styles */
+.email-content h1,
+.email-content h2,
+.email-content h3,
+.email-content h4,
+.email-content h5,
+.email-content h6 {
+  margin: 0;
+  padding: 0;
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+/* Remove forced list styles */
+.email-content ul,
+.email-content ol {
+  margin: 0;
+  padding: 0;
+}
+
+.email-content li {
+  margin: 0;
 }

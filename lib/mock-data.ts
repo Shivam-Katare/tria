@@ -1,23 +1,35 @@
+/**
+ * @deprecated This file is deprecated. Use the new types from @/types/email instead.
+ * Email data is now managed through Zustand store (@/store/email-store)
+ * and loaded from API response format defined in @/types/api.
+ *
+ * See:
+ * - @/types/email for Email and DashboardData types
+ * - @/store/email-store for state management
+ * - @/lib/email-utils for data parsing utilities
+ * - @/hooks/use-load-emails for data loading
+ */
+
 export interface Email {
-  id: number
-  subject: string
-  sender: string
-  time: string
-  preview: string
-  category: "urgent" | "important" | "normal"
-  aiDraft?: string
+  id: number;
+  subject: string;
+  sender: string;
+  time: string;
+  preview: string;
+  category: "urgent" | "important" | "normal";
+  aiDraft?: string;
 }
 
 export interface DashboardData {
   summary: {
-    processed: number
-    urgent: number
-    important: number
-    archived: number
-    timeSaved: number
-  }
-  urgentEmails: Email[]
-  importantEmails: Email[]
+    processed: number;
+    urgent: number;
+    important: number;
+    archived: number;
+    timeSaved: number;
+  };
+  urgentEmails: Email[];
+  importantEmails: Email[];
 }
 
 export const mockData: DashboardData = {
@@ -97,4 +109,4 @@ export const mockData: DashboardData = {
       category: "important",
     },
   ],
-}
+};
