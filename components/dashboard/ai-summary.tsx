@@ -24,7 +24,7 @@ export const AISummary = memo(function AISummary({
       <div className="flex items-start gap-5">
         <div
           className="flex items-center justify-center w-10 h-10 rounded-xl
-               bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600
+               bg-linear-to-br from-orange-500 via-pink-500 to-purple-600
                shrink-0"
         >
           <Sparkles className="h-5 w-5 text-white" />

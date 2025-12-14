@@ -40,10 +40,16 @@ export function TopicsSection({
               className="gap-1.5 px-3 py-1.5 text-sm bg-linear-to-r from-blue-500 to-cyan-500 text-white border-0"
             >
               {topic}
-              <X
-                className="h-3 w-3 cursor-pointer hover:opacity-70"
-                onClick={() => onRemove(topic)}
-              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(topic);
+                }}
+                className="ml-1 hover:opacity-70 focus:outline-none"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </Badge>
           ))}
         </div>

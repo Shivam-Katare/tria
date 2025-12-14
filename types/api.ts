@@ -1,6 +1,6 @@
 /**
  * API Response Types
- * Updated structure from tria_mock_key_api_Request_two_data_ke_saath.json
+ * Updated structure from tria_mock_key_api_request_response.json
  */
 
 export interface APIResponse {

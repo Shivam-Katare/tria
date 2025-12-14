@@ -12,6 +12,14 @@ export type EmailBadge =
   | "SOCIAL"
   | "FYI";
 
+export interface EmailReply {
+  id: string;
+  content: string;
+  timestamp: Date;
+  from: string;
+  to: string;
+}
+
 export interface Email {
   id: string;
   subject: string;
@@ -28,6 +36,7 @@ export interface Email {
   draft: string;
   needsReply: boolean;
   badge?: EmailBadge;
+  replies?: EmailReply[];
 }
 
 export interface DashboardSummary {

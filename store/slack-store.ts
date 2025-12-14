@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { API_ENDPOINTS } from "@/lib/constants/endpoints";
 import type { Email } from "@/types/email";
+import { toast } from "react-hot-toast";
 
 interface SlackStore {
   isSending: boolean;
@@ -51,17 +52,18 @@ export const useSlackStore = create<SlackStore>((set) => ({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send to Slack");
+        toast.error("Failed to send to Slack");
+      } else {
+        toast.success("Successfully sent to Slack!");
       }
 
       set({ isSending: false });
     } catch (error) {
-      console.error("Error sending to Slack:", error);
       set({
         error: "Failed to send to Slack. Please try again.",
         isSending: false,
       });
-      throw error;
+      toast.error("Failed to send to Slack. Please try again.");
     }
   },
 

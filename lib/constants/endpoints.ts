@@ -8,6 +8,8 @@ export const BACKEND_ENDPOINTS = {
     "http://localhost:8080/api/v1/main/executions/webhook/tria/slack_notification/slack-key",
   SEND_EMAIL:
     "http://localhost:8080/api/v1/main/executions/webhook/tria/send-email-via-gmail/send-email-webhook-key",
+  REPLY_EMAIL:
+    "http://localhost:8080/api/v1/main/executions/webhook/tria/reply-email-via-resend/reply-email-webhook-key",
   FETCH_EMAILS:
     "http://localhost:8080/api/v1/main/executions/webhook/tria/hi-tria/tria-email-triage-key",
 } as const;
@@ -17,5 +19,6 @@ export const API_ENDPOINTS = {
   RULES: "/api/rules",
   SLACK: "/api/slack",
   SEND_EMAIL: "/api/send-email",
+  REPLY_EMAIL: "/api/reply-email",
   EMAILS: "/api/emails",
 } as const;

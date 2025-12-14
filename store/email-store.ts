@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import type { Email, DashboardData } from "@/types/email";
+import type { Email } from "@/types/email";
 import type { GlobalSummary } from "@/types/api";
+import toast from "react-hot-toast";
 
 interface EmailStore {
   // State
@@ -38,6 +39,16 @@ interface EmailStore {
     to: string[];
     subject: string;
     htmlBody: string;
+    cc?: string[];
+    bcc?: string[];
+  }) => Promise<void>;
+  replyToEmail: (payload: {
+    to: string[];
+    from?: string;
+    replyTo?: string[];
+    subject: string;
+    html?: string;
+    text?: string;
     cc?: string[];
     bcc?: string[];
   }) => Promise<void>;
@@ -125,25 +136,22 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
       }
 
       const data = await response.json();
-      
+
       // Parse emails using email-utils
       const { parseAPIResponse } = await import("@/lib/email-utils");
       const emails = parseAPIResponse(data);
-      
+
       get().setEmails(emails);
-      
+
       // Set global summary from API
       if (data.summary) {
         get().setGlobalSummary(data.summary);
       }
-      
+
       set({ isLoading: false });
     } catch (error) {
       console.error("Error fetching emails:", error);
-      set({
-        error: "Failed to fetch emails. Please try again.",
-        isLoading: false,
-      });
+      set({ isLoading: false });
       throw error;
     }
   },
@@ -160,17 +168,47 @@ export const useEmailStore = create<EmailStore>((set, get) => ({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send email");
+        toast.error("Failed to send email");
+      } else {
+        toast.success("Email sent successfully!");
       }
 
       set({ isSending: false });
     } catch (error) {
-      console.error("Error sending email:", error);
       set({
         error: "Failed to send email. Please try again.",
         isSending: false,
       });
-      throw error;
+    }
+  },
+
+  replyToEmail: async (payload) => {
+    set({ isSending: true, error: null });
+    try {
+      const response = await fetch("/api/reply-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        toast.error("Failed to reply to email");
+      } else {
+        toast.success("Reply sent successfully!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+
+      set({ isSending: false });
+    } catch (error) {
+      toast.error("Failed to reply to email. Please try again.");
+      set({
+        error: "Failed to reply to email. Please try again.",
+        isSending: false,
+      });
     }
   },
 

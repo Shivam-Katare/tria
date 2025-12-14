@@ -6,6 +6,7 @@ import { X, Send } from "lucide-react";
 import { RichTextEditor } from "./rich-text-editor";
 import { useEmailStore } from "@/store/email-store";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 interface ComposeEmailDialogProps {
   isOpen: boolean;
@@ -34,17 +35,17 @@ export function ComposeEmailDialog({
       .filter(Boolean);
 
     if (toArray.length === 0) {
-      alert("Please add at least one recipient");
+      toast.error("Please add at least one recipient");
       return;
     }
 
     if (!subject.trim()) {
-      alert("Please add a subject");
+      toast.error("Please add a subject");
       return;
     }
 
     if (!body.trim()) {
-      alert("Please write a message");
+      toast.error("Please write a message");
       return;
     }
 
@@ -60,7 +61,6 @@ export function ComposeEmailDialog({
         bcc: bccArray.length > 0 ? bccArray : undefined,
       });
 
-      alert("Email sent successfully!");
       onClose();
 
       // Reset form
@@ -72,7 +72,7 @@ export function ComposeEmailDialog({
       setShowCc(false);
       setShowBcc(false);
     } catch (error) {
-      alert("Failed to send email. Please try again.");
+      toast.error("Failed to send email. Please try again.");
     }
   };
 

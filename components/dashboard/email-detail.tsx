@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Archive, Sparkles, Mail, Send, ChevronDown } from "lucide-react";
+import { X, Archive, Sparkles, Mail, Send } from "lucide-react";
 import { Slack } from "lucide-react";
 import type { Email } from "@/types/email";
 import { memo, useState, useEffect } from "react";
@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { RichTextEditor } from "./rich-text-editor";
 import { useSlackStore } from "@/store/slack-store";
 import { useEmailStore } from "@/store/email-store";
+import toast from "react-hot-toast";
 
 interface EmailDetailProps {
   email: Email;
@@ -21,7 +22,7 @@ export const EmailDetail = memo(function EmailDetail({
   onClose,
 }: EmailDetailProps) {
   const { sendToSlack, isSending: isSendingToSlack } = useSlackStore();
-  const { sendEmail, isSending: isSendingEmail } = useEmailStore();
+  const { replyToEmail, isSending: isSendingEmail } = useEmailStore();
   const [replyBody, setReplyBody] = useState("");
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
@@ -29,11 +30,21 @@ export const EmailDetail = memo(function EmailDetail({
   const [bcc, setBcc] = useState("");
   const [isInsightsExpanded, setIsInsightsExpanded] = useState(true);
 
-  // Pre-fill draft if needs_reply is true and draft is not empty
+  // Pre-fill draft if needs_reply is true and draft is not empty, and no replies exist
   useEffect(() => {
-    if (email.needsReply && email.draft) {
+    // Check localStorage for existing replies
+    const storageKey = `tria_email_replies_${email.id}`;
+    const existingReplies = typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem(storageKey) || "[]")
+      : [];
+
+    // Only pre-fill draft if no replies exist in localStorage
+    if (
+      email.needsReply &&
+      email.draft &&
+      existingReplies.length === 0
+    ) {
       setReplyBody(email.draft);
-      console.log(replyBody, email.draft);
     }
   }, [email.id, email.needsReply, email.draft]);
 
@@ -43,9 +54,15 @@ export const EmailDetail = memo(function EmailDetail({
       const emailContent = replyBody || email.draft || "";
 
       if (!emailContent.trim()) {
-        alert("Please write a message before sending.");
+        toast.error("Please write a message before sending.");
         return;
       }
+
+      // Get configured reply email from localStorage
+      const replyEmail =
+        typeof window !== "undefined"
+          ? localStorage.getItem("tria_reply_email") || "onboarding@resend.dev"
+          : "onboarding@resend.dev";
 
       // Parse cc and bcc strings to arrays
       const ccArray = cc.trim() ? cc.split(",").map((e) => e.trim()) : [];
@@ -53,27 +70,49 @@ export const EmailDetail = memo(function EmailDetail({
 
       const payload = {
         to: [email.senderEmail],
+        from: replyEmail,
+        replyTo: [email.senderEmail],
         subject: `Re: ${email.subject}`,
-        htmlBody: emailContent,
+        html: emailContent,
         cc: ccArray.length > 0 ? ccArray : undefined,
         bcc: bccArray.length > 0 ? bccArray : undefined,
       };
 
-      await sendEmail(payload);
-      alert("Email sent successfully!");
-      onClose();
+      await replyToEmail(payload);
+
+      // Store reply in localStorage
+      const replyData = {
+        id: `reply-${Date.now()}`,
+        content: emailContent,
+        timestamp: new Date(),
+        from: replyEmail,
+        to: email.senderEmail,
+      };
+
+      // Get existing email data from localStorage
+      const storageKey = `tria_email_replies_${email.id}`;
+      const existingReplies =
+        typeof window !== "undefined"
+          ? JSON.parse(localStorage.getItem(storageKey) || "[]")
+          : [];
+
+      // Add new reply
+      existingReplies.push(replyData);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, JSON.stringify(existingReplies));
+      }
+
+      // Clear reply box
+      setReplyBody("");
+      setCc("");
+      setBcc("");
     } catch (error) {
-      alert("Failed to send email. Please try again.");
+      toast.error("Failed to send email. Please try again.");
     }
   };
 
   const handleSendToSlack = async () => {
-    try {
-      await sendToSlack(email);
-      alert("Successfully sent to Slack!");
-    } catch (error) {
-      alert("Failed to send to Slack. Please try again.");
-    }
+    await sendToSlack(email);
   };
 
   return (
@@ -147,16 +186,12 @@ export const EmailDetail = memo(function EmailDetail({
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl hover:opacity-90 transition-opacity"
               >
                 {/* Icon container */}
-                <div
-                  className="flex items-center justify-center w-7 h-7 rounded-lg bg-linear-to-br from-orange-500 via-pink-500 to-purple-600"
-                >
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-linear-to-br from-orange-500 via-pink-500 to-purple-600">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
 
                 {/* Gradient text */}
-                <span
-                  className="text-base font-semibold tracking-tight bg-linear-to-r from-orange-400 via-pink-500 to-purple-500 bg-clip-text text-transparent"
-                >
+                <span className="text-base font-semibold tracking-tight bg-linear-to-r from-orange-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
                   AI Insight
                 </span>
               </button>
@@ -194,11 +229,54 @@ export const EmailDetail = memo(function EmailDetail({
       {/* Two Column Layout: Email Content + Reply Area */}
       <div className="flex flex-col lg:flex-row gap-6 pb-6">
         {/* Left Side: Email Content (Scrollable) */}
-        <div className="flex-1 min-w-0 px-4 overflow-y-auto max-h-[calc(100vh-300px)] bg-card rounded-[12px] p-4">
-          <div
-            className="email-content prose prose-sm max-w-none [word-break:break-word] wrap-anywhere"
-            dangerouslySetInnerHTML={{ __html: email.htmlContent }}
-          />
+        <div className="flex-1 min-w-0 px-4 overflow-y-auto max-h-[calc(100vh-300px)] space-y-4">
+          {/* Original Email */}
+          <div className="bg-card rounded-[12px] p-4 border">
+            <div
+              className="email-content prose prose-sm max-w-none [word-break:break-word] wrap-anywhere"
+              dangerouslySetInnerHTML={{ __html: email.htmlContent }}
+            />
+          </div>
+
+          {/* Replies Section */}
+          {(() => {
+            const storageKey = `tria_email_replies_${email.id}`;
+            const replies =
+              typeof window !== "undefined"
+                ? JSON.parse(localStorage.getItem(storageKey) || "[]")
+                : [];
+
+            return (
+              replies.length > 0 && (
+                <div className="space-y-4">
+                  {replies.map((reply: any, index: number) => (
+                    <motion.div
+                      key={reply.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-card rounded-[12px] p-4 border border-purple-200 dark:border-purple-800"
+                    >
+                      <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
+                        <div className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                          <Mail className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <span className="font-medium">You replied</span>
+                        <span>•</span>
+                        <span>
+                          {new Date(reply.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                      <div
+                        className="email-content prose prose-sm max-w-none [word-break:break-word] wrap-anywhere"
+                        dangerouslySetInnerHTML={{ __html: reply.content }}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              )
+            );
+          })()}
         </div>
 
         {/* Right Side: Reply Area (Fixed Width) */}

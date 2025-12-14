@@ -4,6 +4,7 @@ import { Inter, Henny_Penny, Crimson_Text, Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "@/styles/globals.css";
 import { Providers } from "./providers";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,9 +31,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Tria — AI Email Triage",
+  title: "Tria",
   description:
-    "Stop drowning in emails. Tria uses AI to triage your inbox in 10 minutes.",
+    "AI-Powered Email Intelligence",
   generator: "tria",
 };
 
@@ -53,6 +54,16 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange={false}
           >
+            <Toaster
+              toastOptions={{
+                className: "",
+                style: {
+                  background: "var(--background)",
+                  color: "var(--foreground)",
+                  border: "1px solid var(--border)",
+                },
+              }}
+            />
             {children}
           </ThemeProvider>
         </Providers>

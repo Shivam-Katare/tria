@@ -12,9 +12,8 @@ import { LogOut, Mail } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Inbox" },
-  { href: "/dashboard/sent", label: "Sent" },
   { href: "/dashboard/rules", label: "Rules" },
-  { href: "/dashboard/stats", label: "Stats" },
+  { href: "/dashboard/setup", label: "Setup" },
 ];
 
 export function DashboardHeader() {

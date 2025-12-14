@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { RulesSettings } from "@/types/rules";
 import { API_ENDPOINTS } from "@/lib/constants/endpoints";
+import toast from "react-hot-toast";
 
 interface RulesStore {
   settings: RulesSettings | null;
@@ -22,10 +23,6 @@ export const useRulesStore = create<RulesStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await fetch(API_ENDPOINTS.RULES);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch settings");
-      }
 
       const result = await response.json();
       const data = result.settings;
@@ -56,7 +53,6 @@ export const useRulesStore = create<RulesStore>((set) => ({
         });
       }
     } catch (error) {
-      console.error("Error fetching settings:", error);
       set({
         settings: {
           fullName: "",
@@ -90,17 +86,16 @@ export const useRulesStore = create<RulesStore>((set) => ({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save settings");
+        toast.error("Failed to save settings. Please try again.");
       }
 
       set({ settings, isSaving: false });
     } catch (error) {
-      console.error("Error saving settings:", error);
+      toast.error("Failed to save settings. Please try again.");
       set({
         error: "Failed to save settings. Please try again.",
         isSaving: false,
       });
-      throw error;
     }
   },
 
