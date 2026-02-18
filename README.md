@@ -1,5 +1,9 @@
-# 🚀 Tria
+# 🚀 Tria ($4,000) Hackathon Winner
 Your Inbox, Intelligently Managed
+
+Live: https://hellotria.vercel.app/
+
+<img width="200" height="300" alt="image" src="https://github.com/user-attachments/assets/b132749b-bf1f-4fef-b3b5-9fc481398179" />
 
 # 🚀 Tria - Setup Guide
 
@@ -313,3 +317,4 @@ Tria is now ready to:
 * Gemini API: [https://ai.google.dev](https://ai.google.dev)
 
 ---
+
